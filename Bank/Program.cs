@@ -7,54 +7,69 @@ using System.IO;
 using System.ComponentModel.Design;
 
 namespace Bank {
-    public class CreateAccount {
+    public class CreateAccount
+    {
         private string[] user = new string[6];
         private string user_file = "account.txt";
 
-        public void SetAccount() {
+        public void SetAccount()
+        {
             Console.WriteLine("Welcome\nHere you will create your Bank account\nPlease fill out the form\n\n");
             string[] field = new string[6] { "first name:", "last name:", "DOB:", "password:", "account type:", "Initial deposit must be >=500\n$:" };
+            Account userNew = new Account();
 
-            int controller = 0;
             int max_try = 3;
-            for (controller = 0; controller < 6; controller++) {
+            for (int controller = 0; controller < 6; controller++)
+            {
                 Console.Write("{0}", field[controller]);
                 user[controller] = Console.ReadLine();
-            }
-
-            // Parse the user input to an int and check if it is less than 500
-            int deposit = 0;
-            bool isNumber = int.TryParse(user[5], out deposit);
-            if (!isNumber || deposit < 500) {
-                Console.WriteLine("Sorry, enter a deposit >= 500");
-                user[5] = "0.00";
-
-                while (!isNumber || deposit < 500 && max_try > 0) {
-                    Console.Write("{0}", field[5]);
-                    user[5] = Console.ReadLine();
-                    isNumber = int.TryParse(user[5], out deposit);
-                    max_try--;
+                if (controller == 5)
+                {
+                    while (!IsValidDeposit(user[controller]) && max_try > 0)
+                    {
+                        Console.WriteLine("Sorry, enter a deposit >= 500\n$:");
+                        user[controller] = Console.ReadLine();
+                        max_try--;
+                    }
+                    if (max_try <= 0 && !IsValidDeposit(user[controller]))
+                    {
+                        Console.WriteLine("Sorry, your account could not be created\nTry again later!");
+                        Console.ReadKey();
+                        return;
+                    }
                 }
-
-                if (max_try <= 0 && !isNumber) {
-                    Console.WriteLine("Sorry, your account could not be created\nTry again later!");
+                else if (string.IsNullOrEmpty(user[controller]))
+                {
+                    Console.WriteLine("Sorry, {0} cannot be empty", field[controller]);
                     Console.ReadKey();
                     return;
                 }
             }
 
             // Save the user account details to file
-            try {
+            try
+            {
                 File.WriteAllLines(user_file, user);
                 Console.WriteLine("Congratulations!!\nYour account has been created successfully");
                 Console.WriteLine("\n\n");
-                
+                userNew.Menu();
             }
-            catch (Exception error) {
+            catch (Exception error)
+            {
                 Console.WriteLine(error.Message);
             }
         }
+
+        public bool IsValidDeposit(string input)
+        {
+            if (!int.TryParse(input, out int deposit) || deposit < 500)
+            {
+                return false;
+            }
+            return true;
+        }
     }
+
 
     public class Account {
         private string[] user_info;
